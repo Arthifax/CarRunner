@@ -3,6 +3,7 @@ using UnityEngine;
 
 public class Player : MonoBehaviour
 {
+    public GameObject playerSpark;
     [Header("Player Physics")]
     public float gravity;
     public float acceleration = 10;
@@ -13,12 +14,18 @@ public class Player : MonoBehaviour
     [Header("Checks")]
     public float groundHeight = 0;
     [SerializeField] bool isGrounded = false;
+    [SerializeField] bool onRails = false;
     [SerializeField] private bool isHoldingJump = false;
     [SerializeField] public float maxHoldJumpTime = 0.4f;
     public float holdJumpTimer = 0.0f;
     public float jumpGroundThreshhold = 1;
     public float distance = 0;
-    
+
+    private void Awake()
+    {
+        playerSpark = GameObject.Find("PlayerSparkVFX");
+    }
+
     void Update()
     {
         Vector2 pos = transform.position;
@@ -30,6 +37,7 @@ public class Player : MonoBehaviour
             if (Input.GetKeyDown(KeyCode.Space))
             {
                 isGrounded = false;
+                onRails = false;
                 velocity.y = jumpVelocity;
                 isHoldingJump = true;
                 holdJumpTimer = 0;
@@ -77,6 +85,15 @@ public class Player : MonoBehaviour
                     pos.y = groundHeight;
                     isGrounded = true;
                 }
+
+                if (hit2D.collider.tag == "rail" && onRails == false)
+                {
+                    onRails = true;
+                }
+                else
+                {
+                    onRails = false;
+                }
             }
             Debug.DrawRay(rayOrigin, rayDirection * rayDistance, Color.red);
         }
@@ -106,13 +123,22 @@ public class Player : MonoBehaviour
             Debug.DrawRay(rayOrigin, rayDirection * rayDistance, Color.yellow);
         }
 
+        if (onRails == true)
+        {
+            playerSpark.SetActive(true);
+        }
+        else
+        {
+            playerSpark.SetActive(false);
+        }
+
         //count distance traveled over time
         distance += velocity.x * Time.fixedDeltaTime;
         
         transform.position = pos;
     }
 
-    private void OnCollisionEnter2D(Collision2D col)
+    /*private void OnCollisionEnter2D(Collision2D col)
     {
         if (col.gameObject.CompareTag("ground"))
         {
@@ -121,5 +147,5 @@ public class Player : MonoBehaviour
                 isGrounded = true;
             }
         }
-    }
+    }*/
 }
